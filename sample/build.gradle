@@ -6,7 +6,7 @@ android {
     compileSdk 35
     defaultConfig {
         applicationId "com.yalantis.ucrop.sample"
-        minSdkVersion 14
+        minSdkVersion 21
         targetSdkVersion 35
         versionCode 13
         versionName "1.2.4"
@@ -39,6 +39,7 @@ android {
 }
 
 dependencies {
+    implementation "androidx.activity:activity:${androidx_activity_version}"
     implementation "androidx.appcompat:appcompat:${androidx_appcompat_version}"
     implementation "androidx.core:core:${androidx_core_version}"
     implementation "androidx.constraintlayout:constraintlayout:${constraintlayout_version}"

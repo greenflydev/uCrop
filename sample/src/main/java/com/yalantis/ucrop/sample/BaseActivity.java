@@ -1,12 +1,19 @@
 package com.yalantis.ucrop.sample;
 
 import android.content.DialogInterface;
+import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
 
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 /**
  * Created by Oleksii Shliama (https://github.com/shliama).
@@ -17,6 +24,12 @@ public class BaseActivity extends AppCompatActivity {
     protected static final int REQUEST_STORAGE_WRITE_ACCESS_PERMISSION = 102;
 
     private AlertDialog mAlertDialog;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
+        super.onCreate(savedInstanceState);
+    }
 
     /**
      * Hide alert dialog if any.
@@ -29,6 +42,20 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
+    protected void applyWindowInsets(View target) {
+        ViewCompat.setOnApplyWindowInsetsListener(target, (view, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+            layoutParams.leftMargin = insets.left;
+            layoutParams.bottomMargin = insets.bottom;
+            layoutParams.rightMargin = insets.right;
+            layoutParams.topMargin = insets.top;
+            view.setLayoutParams(layoutParams);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
+    }
 
     /**
      * Requests given permission.

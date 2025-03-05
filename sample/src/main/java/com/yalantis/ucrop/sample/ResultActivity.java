@@ -58,6 +58,7 @@ public class ResultActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
+        applyWindowInsets(findViewById(R.id.root_result));
         Uri uri = getIntent().getData();
         if (uri != null) {
             try {

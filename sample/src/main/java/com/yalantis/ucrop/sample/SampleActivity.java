@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CheckBox;
@@ -41,10 +40,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.OnApplyWindowInsetsListener;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 /**
  * Created by Oleksii Shliama (https://github.com/shliama).
@@ -86,8 +81,7 @@ public class SampleActivity extends BaseActivity implements UCropFragmentCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(com.yalantis.ucrop.sample.R.layout.activity_sample);
-        applyWindowInsets();
-        enableEdgeToEdge();
+        applyWindowInsets(findViewById(R.id.root_sample));
         setupUI();
     }
 
@@ -146,22 +140,6 @@ public class SampleActivity extends BaseActivity implements UCropFragmentCallbac
             }
         }
     };
-
-    private void applyWindowInsets() {
-        View root = findViewById(R.id.root);
-        ViewCompat.setOnApplyWindowInsetsListener(root, (view, windowInsets) -> {
-            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-
-            ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-            layoutParams.leftMargin = insets.left;
-            layoutParams.bottomMargin = insets.bottom;
-            layoutParams.rightMargin = insets.right;
-            layoutParams.topMargin = insets.top;
-            view.setLayoutParams(layoutParams);
-
-            return WindowInsetsCompat.CONSUMED;
-        });
-    }
 
     @SuppressWarnings("ConstantConditions")
     private void setupUI() {
