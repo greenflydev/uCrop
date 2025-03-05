@@ -35,6 +35,8 @@ import java.io.File;
 import java.util.Locale;
 import java.util.Random;
 
+import androidx.activity.EdgeToEdge;
+import androidx.activity.SystemBarStyle;
 import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -80,6 +82,11 @@ public class SampleActivity extends BaseActivity implements UCropFragmentCallbac
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(
+                this,
+                SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
+                SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+        );
         super.onCreate(savedInstanceState);
         setContentView(com.yalantis.ucrop.sample.R.layout.activity_sample);
         applyWindowInsets(findViewById(R.id.root_sample));
