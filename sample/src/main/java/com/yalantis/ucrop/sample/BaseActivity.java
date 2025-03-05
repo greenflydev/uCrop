@@ -1,11 +1,9 @@
 package com.yalantis.ucrop.sample;
 
 import android.content.DialogInterface;
-import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -24,12 +22,6 @@ public class BaseActivity extends AppCompatActivity {
     protected static final int REQUEST_STORAGE_WRITE_ACCESS_PERMISSION = 102;
 
     private AlertDialog mAlertDialog;
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        EdgeToEdge.enable(this);
-        super.onCreate(savedInstanceState);
-    }
 
     /**
      * Hide alert dialog if any.
