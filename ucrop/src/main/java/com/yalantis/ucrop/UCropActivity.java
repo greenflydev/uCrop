@@ -3,6 +3,7 @@ package com.yalantis.ucrop;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
@@ -17,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.FrameLayout;
@@ -42,6 +44,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import androidx.activity.EdgeToEdge;
+import androidx.activity.SystemBarStyle;
 import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.IdRes;
@@ -52,6 +56,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.transition.AutoTransition;
 import androidx.transition.Transition;
 import androidx.transition.TransitionManager;
@@ -122,8 +129,14 @@ public class UCropActivity extends AppCompatActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(
+                this,
+                SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
+                SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+        );
         super.onCreate(savedInstanceState);
         setContentView(R.layout.ucrop_activity_photobox);
+        applyWindowInsets();
 
         final Intent intent = getIntent();
 
@@ -188,6 +201,22 @@ public class UCropActivity extends AppCompatActivity {
         if (mGestureCropImageView != null) {
             mGestureCropImageView.cancelAllAnimations();
         }
+    }
+
+    private void applyWindowInsets() {
+        View root = findViewById(R.id.ucrop_photobox);
+        ViewCompat.setOnApplyWindowInsetsListener(root, (view, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+            layoutParams.leftMargin = insets.left;
+            layoutParams.bottomMargin = insets.bottom;
+            layoutParams.rightMargin = insets.right;
+            layoutParams.topMargin = insets.top;
+            view.setLayoutParams(layoutParams);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     /**
@@ -423,12 +452,19 @@ public class UCropActivity extends AppCompatActivity {
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void setStatusBarColor(@ColorInt int color) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            final Window window = getWindow();
-            if (window != null) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-                window.setStatusBarColor(color);
-            }
+        final Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) { // Android 15+
+            window.getDecorView().setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+                @NonNull
+                @Override
+                public WindowInsets onApplyWindowInsets(@NonNull View v, @NonNull WindowInsets insets) {
+                    v.setBackgroundColor(color);
+                    return insets;
+                }
+            });
+        } else {
+            window.setStatusBarColor(color);
         }
     }
 
