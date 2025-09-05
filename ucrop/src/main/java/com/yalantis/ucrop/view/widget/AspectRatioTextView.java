@@ -12,16 +12,16 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatTextView;
+import androidx.core.content.ContextCompat;
+
 import com.yalantis.ucrop.R;
 import com.yalantis.ucrop.model.AspectRatio;
 import com.yalantis.ucrop.view.CropImageView;
 
 import java.util.Locale;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.appcompat.widget.AppCompatTextView;
-import androidx.core.content.ContextCompat;
 
 /**
  * Created by Oleksii Shliama (https://github.com/shliama).
@@ -134,7 +134,11 @@ public class AspectRatioTextView extends AppCompatTextView {
                 },
                 new int[]{
                         activeColor,
-                        ContextCompat.getColor(getContext(), R.color.ucrop_color_widget)
+                        ContextCompat.getColor(getContext(), R.color.ucrop_color_heather)
+                        /*
+                         * Changed the text color on the widget section above the bottom controls
+                         * to be the a light grey that matches the teext color of the bottom controls
+                         */
                 }
         );
 
