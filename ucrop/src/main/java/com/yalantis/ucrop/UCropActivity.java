@@ -1,6 +1,5 @@
 package com.yalantis.ucrop;
 
-import android.annotation.TargetApi;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -8,7 +7,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -17,9 +15,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowInsets;
-import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -41,7 +36,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.transition.AutoTransition;
 import androidx.transition.Transition;
@@ -95,7 +89,6 @@ public class UCropActivity extends AppCompatActivity {
 
     // Enables dynamic coloring
     private int mToolbarColor;
-    private int mStatusBarColor;
     private int mActiveControlsWidgetColor;
     private int mToolbarWidgetColor;
     @ColorInt
@@ -130,17 +123,12 @@ public class UCropActivity extends AppCompatActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        EdgeToEdge.enable(
-                this,
-                SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
-                SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
-        );
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.ucrop_activity_photobox);
-        applyWindowInsets();
 
         final Intent intent = getIntent();
 
+        setupSystemBars(intent);
+        setContentView(R.layout.ucrop_activity_photobox);
         setupViews(intent);
         setImageData(intent);
         setInitialState();
@@ -202,22 +190,6 @@ public class UCropActivity extends AppCompatActivity {
         if (mGestureCropImageView != null) {
             mGestureCropImageView.cancelAllAnimations();
         }
-    }
-
-    private void applyWindowInsets() {
-        View root = findViewById(R.id.ucrop_photobox);
-        ViewCompat.setOnApplyWindowInsetsListener(root, (view, windowInsets) -> {
-            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-
-            ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-            layoutParams.leftMargin = insets.left;
-            layoutParams.bottomMargin = insets.bottom;
-            layoutParams.rightMargin = insets.right;
-            layoutParams.topMargin = insets.top;
-            view.setLayoutParams(layoutParams);
-
-            return WindowInsetsCompat.CONSUMED;
-        });
     }
 
     /**
@@ -315,8 +287,21 @@ public class UCropActivity extends AppCompatActivity {
         }
     }
 
+    private void setupSystemBars(@NonNull Intent intent) {
+        boolean statusBarLight = intent.getBooleanExtra(UCrop.Options.EXTRA_STATUS_BAR_LIGHT, true);
+        boolean navigationBarLight = intent.getBooleanExtra(UCrop.Options.EXTRA_NAVIGATION_BAR_LIGHT, false);
+
+        SystemBarStyle statusBarStyle = statusBarLight
+                ? SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                : SystemBarStyle.dark(Color.TRANSPARENT);
+        SystemBarStyle navigationBarStyle = navigationBarLight
+                ? SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                : SystemBarStyle.dark(Color.TRANSPARENT);
+
+        EdgeToEdge.enable(this, statusBarStyle, navigationBarStyle);
+    }
+
     private void setupViews(@NonNull Intent intent) {
-        mStatusBarColor = intent.getIntExtra(UCrop.Options.EXTRA_STATUS_BAR_COLOR, ContextCompat.getColor(this, R.color.ucrop_color_statusbar));
         mToolbarColor = intent.getIntExtra(UCrop.Options.EXTRA_TOOL_BAR_COLOR, ContextCompat.getColor(this, R.color.ucrop_color_toolbar));
         mActiveControlsWidgetColor = intent.getIntExtra(UCrop.Options.EXTRA_UCROP_COLOR_CONTROLS_WIDGET_ACTIVE, ContextCompat.getColor(this, R.color.ucrop_color_active_controls_color));
 
@@ -353,6 +338,19 @@ public class UCropActivity extends AppCompatActivity {
             mLayoutRotate = findViewById(R.id.layout_rotate_wheel);
             mLayoutScale = findViewById(R.id.layout_scale_wheel);
 
+            View controlsWrapper = findViewById(R.id.controls_wrapper);
+            int wrapperStatesHeight = getResources().getDimensionPixelSize(R.dimen.ucrop_height_wrapper_states);
+            ViewCompat.setOnApplyWindowInsetsListener(controlsWrapper.findViewById(R.id.wrapper_states), (view, windowInsets) -> {
+                Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+                view.setPaddingRelative(insets.left, 0, insets.right, insets.bottom);
+                ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+                int newWrapperStatesHeight = wrapperStatesHeight + insets.bottom;
+                if (layoutParams.height != newWrapperStatesHeight) {
+                    layoutParams.height = newWrapperStatesHeight;
+                    view.setLayoutParams(layoutParams);
+                }
+                return windowInsets;
+            });
             setupAspectRatioWidget(intent);
             setupRotateWidget();
             setupScaleWidget();
@@ -364,9 +362,13 @@ public class UCropActivity extends AppCompatActivity {
      * Configures and styles both status bar and toolbar.
      */
     private void setupAppBar() {
-        setStatusBarColor(mStatusBarColor);
-
         final Toolbar toolbar = findViewById(R.id.toolbar);
+
+        ViewCompat.setOnApplyWindowInsetsListener(toolbar, (view, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            view.setPaddingRelative(insets.left, insets.top, insets.right, 0);
+            return windowInsets;
+        });
 
         // Set all of the Toolbar coloring
         toolbar.setBackgroundColor(mToolbarColor);
@@ -443,38 +445,6 @@ public class UCropActivity extends AppCompatActivity {
         stateScaleImageView.setImageDrawable(new SelectedStateListDrawable(stateScaleImageView.getDrawable(), mActiveControlsWidgetColor));
         stateRotateImageView.setImageDrawable(new SelectedStateListDrawable(stateRotateImageView.getDrawable(), mActiveControlsWidgetColor));
         stateAspectRatioImageView.setImageDrawable(new SelectedStateListDrawable(stateAspectRatioImageView.getDrawable(), mActiveControlsWidgetColor));
-    }
-
-
-    /**
-     * Sets status-bar color for L devices.
-     *
-     * @param color - status-bar color
-     */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void setStatusBarColor(@ColorInt int color) {
-        final Window window = getWindow();
-
-        /*
-         * This will force the status bar and the navigation bar to be black, for always dark mode.
-         * This is called from the asset viewer which is also always in dark mode.
-         */
-        WindowCompat.getInsetsController(window, window.getDecorView()).setAppearanceLightStatusBars(false);
-        getWindow().setNavigationBarColor(Color.BLACK);
-
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) { // Android 15+
-            window.getDecorView().setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-                @NonNull
-                @Override
-                public WindowInsets onApplyWindowInsets(@NonNull View v, @NonNull WindowInsets insets) {
-                    v.setBackgroundColor(color);
-                    return insets;
-                }
-            });
-        } else {
-            window.setStatusBarColor(color);
-        }
     }
 
     private void setupAspectRatioWidget(@NonNull Intent intent) {
