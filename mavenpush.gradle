@@ -20,18 +20,21 @@ def getRepositoryPassword() {
     return hasProperty('nexusPassword') ? nexusPassword : ""
 }
 
+
 tasks.register('androidJavadocs', Javadoc) {
     source = android.sourceSets.main.java.sourceFiles
     classpath += project.files(android.getBootClasspath())
 }
 
 tasks.register('androidJavadocsJar', Jar) {
-    archiveClassifier.set('javadoc')
-    from tasks.named('androidJavadocs')
+    archiveClassifier.set("javadoc")
+    //basename = artifact_id
+    from tasks.named('androidJavadocs').get().destinationDir
 }
 
 tasks.register('androidSourcesJar', Jar) {
-    archiveClassifier.set('sources')
+    archiveClassifier.set("sources")
+    //basename = artifact_id
     from android.sourceSets.main.java.sourceFiles
 }
 
@@ -52,8 +55,9 @@ publishing {
                 if (releaseComponent) {
                     from releaseComponent
                 }
-                artifact tasks.named('androidSourcesJar')
-                artifact tasks.named('androidJavadocsJar')
+                artifact tasks.named("bundleReleaseAar")
+                artifact tasks.named('androidSourcesJar').get()
+                artifact tasks.named('androidJavadocsJar').get()
                 version = project.version
             }
 
@@ -87,7 +91,9 @@ publishing {
     }
 }
 
+
 signing {
     required { isReleaseBuild() && gradle.taskGraph.hasTask("publishing") }
     sign publishing.publications.maven
 }
+
